@@ -1,0 +1,65 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id        String   @id @default(cuid())
+    email     String   @unique
+    password  String
+    role      Role     @default(USER)
+    profile   Profile?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Profile {
+    id           String        @id @default(cuid())
+    userId       String        @unique
+    firstName    String
+    lastName     String
+    preferences  Json?
+    inscriptions Inscription[]
+    user         User          @relation(fields: [userId], references: [id])
+}
+
+model Unit {
+    id               String   @id @default(cuid())
+    name             String
+    slug             String   @unique
+    shortDescription String?
+    theme            Json
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @updatedAt
+}
+
+model Event {
+    id           String        @id @default(cuid())
+    title        String
+    description  String
+    startDate    DateTime
+    endDate      DateTime
+    inscriptions Inscription[]
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+}
+
+model Inscription {
+    id        String   @id @default(cuid())
+    profileId String
+    eventId   String?
+    data      Json
+    createdAt DateTime @default(now())
+    profile   Profile  @relation(fields: [profileId], references: [id])
+    event     Event?   @relation(fields: [eventId], references: [id])
+}
+
+enum Role {
+    USER
+    MODERATOR
+    ADMIN
+}
